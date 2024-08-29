@@ -1,12 +1,5 @@
 {% materialization table, adapter='snowflake', supported_languages=['sql', 'python']%}
 
-  {#/* 
-    This materialization overrides the default one that comes with dbt. If it is being used 
-    then we would see the next log line printed out to the dbt logs.
-    https://github.com/dbt-labs/dbt-snowflake/blob/main/dbt/include/snowflake/macros/materializations/table.sql
-  */#}
-
-  {% do print('\n>>>>>>>> Using table materialization from a dbt package instead of dbt builtin <<<<<<<<\n') %}
   {% set original_query_tag = set_query_tag() %}
 
   {%- set identifier = model['alias'] -%}
@@ -31,6 +24,13 @@
   {% call statement('main', language=language) -%}
       {{ create_table_as(False, target_relation, compiled_code, language) }}
   {%- endcall %}
+
+  {#/* 
+    This materialization overrides the default one that comes with dbt. If being used, we should see
+    the following SQL query in the debug logs.
+    https://github.com/dbt-labs/dbt-snowflake/blob/main/dbt/include/snowflake/macros/materializations/table.sql
+  */#}
+  {% do run_query("select 'table materialization from package' as c") %}
 
   {{ run_hooks(post_hooks) }}
 
